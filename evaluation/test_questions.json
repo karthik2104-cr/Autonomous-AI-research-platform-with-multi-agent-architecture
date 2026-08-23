@@ -1,0 +1,55 @@
+{
+  "_comment": "Starter evaluation set (Phase 6). Expand over time with your own questions and expected_keywords from domain knowledge — do not inflate this file artificially.",
+  "version": 1,
+  "questions": [
+    {
+      "id": "web-sqlite-desktop",
+      "question": "What are the main benefits of using SQLite for local desktop applications?",
+      "expected_keywords": ["zero-configuration", "serverless", "file", "embedded", "local"],
+      "expected_source_domains": ["sqlite.org"],
+      "notes": "Should mention zero-config / serverless / single-file storage for desktop apps."
+    },
+    {
+      "id": "web-sqlite-wal",
+      "question": "What is WAL mode in SQLite and why is it used?",
+      "expected_keywords": ["WAL", "write-ahead", "journal", "concurrent", "read"],
+      "expected_source_domains": ["sqlite.org"],
+      "notes": "Web search should retrieve SQLite docs or articles explaining WAL journaling."
+    },
+    {
+      "id": "web-embedded-db-mobile",
+      "question": "Why do mobile applications commonly use embedded databases like SQLite?",
+      "expected_keywords": ["mobile", "embedded", "offline", "local", "storage"],
+      "expected_source_domains": [],
+      "notes": "Should cover offline/local storage benefits on device."
+    },
+    {
+      "id": "kb-nimbus-cache",
+      "question": "What is the Nimbus Cache project codename and how quickly can it rebuild indexes after a power brownout?",
+      "expected_keywords": ["Nimbus Cache", "12 seconds", "brownout", "index"],
+      "expected_source_domains": [],
+      "notes": "Should hit uploaded testdata/aurora_notes.txt in the Knowledge Base (RAG), not only the web."
+    },
+    {
+      "id": "kb-store-and-forward",
+      "question": "When the Aurora constellation enables store-and-forward mode, how do packet loss and latency change?",
+      "expected_keywords": ["store-and-forward", "packet loss", "latency", "4.2", "2.5"],
+      "expected_source_domains": [],
+      "notes": "KB-only: specific numbers from aurora_notes.txt (4.2% -> 0.8%, latency ~2.5s)."
+    },
+    {
+      "id": "web-chromadb-local",
+      "question": "What is ChromaDB and how is it used for local vector search?",
+      "expected_keywords": ["Chroma", "vector", "embedding", "similarity", "local"],
+      "expected_source_domains": [],
+      "notes": "Web search question about vector stores; no KB doc required."
+    },
+    {
+      "id": "mixed-aurora-sqlite",
+      "question": "How does the Aurora satellite constellation use SQLite for offline sensor storage?",
+      "expected_keywords": ["SQLite", "offline", "sensor", "72 hours", "satellite"],
+      "expected_source_domains": [],
+      "notes": "Mixed: KB has Aurora+SQLite details; web may add general context."
+    }
+  ]
+}

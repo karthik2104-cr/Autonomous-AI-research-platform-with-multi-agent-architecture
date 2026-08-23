@@ -1,0 +1,59 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+env/
+*.egg-info/
+.eggs/
+dist/
+build/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Streamlit
+.streamlit/secrets.toml
+
+# Environment (keep .env.example tracked)
+.env
+.env.local
+*.pem
+
+# Local SQLite database
+data/*.db
+data/*.db-wal
+data/*.db-shm
+*.db
+*.db-wal
+*.db-shm
+
+# Runtime data (folder structure tracked via .gitkeep)
+data/chroma/**
+!data/chroma/.gitkeep
+data/documents/**
+!data/documents/.gitkeep
+data/reports/**
+!data/reports/.gitkeep
+
+# Generated evaluation output
+evaluation/results.json
+
+# Dev capture logs from manual test runs
+*_output.txt
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Logs
+*.log

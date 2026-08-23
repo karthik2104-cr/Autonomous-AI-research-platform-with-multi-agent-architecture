@@ -1,0 +1,15 @@
+﻿Aurora Research Notes — Local Knowledge Base Fixture
+
+The Aurora satellite constellation uses low-Earth-orbit relays to deliver
+sub-second telemetry to ground stations. Each satellite carries a radiation-
+hardened SQLite archive that stores the last 72 hours of sensor readings
+offline when ground contact is lost.
+
+Key finding (2024): when the constellation switches to store-and-forward mode,
+packet loss drops from 4.2% to 0.8%, but end-to-end latency rises from 180ms
+to roughly 2.5 seconds. Engineers recommend enabling store-and-forward only
+during solar-flare blackouts.
+
+The project codename for the onboard database module is "Nimbus Cache".
+Nimbus Cache checkpoints every 90 seconds and can rebuild indexes after a
+sudden power brownout within 12 seconds.

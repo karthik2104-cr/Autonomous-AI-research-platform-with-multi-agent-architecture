@@ -1,0 +1,24 @@
+# UI
+streamlit>=1.40.0,<2.0.0
+
+# DB (sync SQLAlchemy + stdlib sqlite3)
+sqlalchemy>=2.0.36,<3.0.0
+python-dotenv>=1.0.1,<2.0.0
+
+# Embedded vector store (local folder, no server)
+chromadb>=0.5.0,<2.0.0
+
+# Local LLM + embeddings via Ollama
+ollama>=0.4.0,<1.0.0
+
+# Web search (free). Package was renamed from duckduckgo-search → ddgs.
+ddgs>=9.0.0,<10.0.0
+
+# PDF text extraction for Knowledge Base uploads
+pypdf>=5.0.0,<6.0.0
+
+# DOCX text extraction for Knowledge Base uploads
+python-docx>=1.1.0,<2.0.0
+
+# Research report PDF export (pure Python, no wkhtmltopdf)
+fpdf2>=2.8.0,<3.0.0
