@@ -1,3 +1,4 @@
+import html
 import os
 from pathlib import Path
 
@@ -5,7 +6,7 @@ import streamlit as st
 
 from core.config import DEFAULT_OLLAMA_EMBED_MODEL, DEFAULT_OLLAMA_MODEL, ENV_FILE
 from core.llm import ollama_available, ollama_embed_model, ollama_model
-from ui.theme import page_intro
+from ui.theme import page_header, section_label, status_badge_html
 
 
 def _write_env_value(path: Path, key: str, value: str) -> None:
@@ -25,34 +26,36 @@ def _write_env_value(path: Path, key: str, value: str) -> None:
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
-page_intro(
+page_header(
     "Settings",
-    "Configure which **Ollama models** this app uses for chat and embeddings. Changes are "
-    "saved to `.env` on disk. Models must already be pulled locally (`ollama pull …`) before "
-    "research or knowledge-base ingest will work.",
+    "Configure Ollama chat and embedding models. Changes are saved to .env. "
+    "Models must already be pulled locally before research or knowledge-base ingest will work.",
 )
 
-st.header("Ollama connection")
+section_label("Ollama connection")
 ok, detail = ollama_available()
-if ok:
-    st.success("Ollama is reachable and required models are available.")
-    st.caption(detail)
-else:
-    st.error("Ollama is not ready.")
-    st.caption(detail)
+st.markdown(
+    f'<div class="ri-card"><div class="ri-card-title">Connection status</div>'
+    f'<div class="ri-card-body">{status_badge_html("done" if ok else "failed")} '
+    f"{html.escape(detail)}</div></div>",
+    unsafe_allow_html=True,
+)
+if not ok:
     st.markdown(
         f"Install [Ollama](https://ollama.com), start it, then run:\n\n"
         f"```\nollama pull {DEFAULT_OLLAMA_MODEL}\nollama pull {DEFAULT_OLLAMA_EMBED_MODEL}\n```"
     )
 
 st.divider()
-st.header("Model names")
-st.caption(
-    "Chat model powers planning, analysis, verification, and report narrative. "
-    "Embedding model powers knowledge-base retrieval."
-)
-chat_model = st.text_input("Chat model (`OLLAMA_MODEL`)", value=ollama_model())
-embed_model = st.text_input("Embedding model (`OLLAMA_EMBED_MODEL`)", value=ollama_embed_model())
+section_label("Chat model")
+st.caption("Powers planning, analysis, verification, and report narrative.")
+chat_model = st.text_input("OLLAMA_MODEL", value=ollama_model())
+
+st.divider()
+section_label("Embedding model")
+st.caption("Powers knowledge-base chunk embeddings and retrieval queries.")
+embed_model = st.text_input("OLLAMA_EMBED_MODEL", value=ollama_embed_model())
+
 if st.button("Save model settings", type="primary"):
     chosen_chat = chat_model.strip() or DEFAULT_OLLAMA_MODEL
     chosen_embed = embed_model.strip() or DEFAULT_OLLAMA_EMBED_MODEL
@@ -64,7 +67,7 @@ if st.button("Save model settings", type="primary"):
     st.rerun()
 
 st.divider()
-st.header("Data locations")
+section_label("Data locations")
 st.markdown(
     f"""
 | Store | Path | Contents |
@@ -74,3 +77,4 @@ st.markdown(
 | Environment | `{ENV_FILE.name}` | Model names and timeouts |
 """
 )
+st.caption("Secrets are not displayed. Only model names and paths are configured here.")

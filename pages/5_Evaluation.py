@@ -3,59 +3,65 @@ import json
 import streamlit as st
 
 from evaluation.run_eval import RESULTS_PATH, load_results, run_evaluation
-from ui.theme import format_pipeline_progress, page_intro
+from ui.theme import (
+    empty_state,
+    format_pipeline_progress,
+    metric_row,
+    page_header,
+    section_label,
+)
 
-page_intro(
+page_header(
     "Evaluation",
-    "Measure retrieval and verification quality against a **hand-built test question set** "
-    "(`evaluation/test_questions.json`). Metrics are deliberately simple heuristics — keyword "
-    "matches in evidence and verifier consistency — not semantic gold-standard scores.",
+    "Measure retrieval and verification against a hand-built test set "
+    "(evaluation/test_questions.json). Metrics are honest heuristics — not ground-truth accuracy.",
 )
 
 st.info(
     "**How to read these metrics:** "
-    "**Retrieval hit** = at least one evidence snippet contains an expected keyword (not semantic similarity). "
-    "**Unsupported rate** = claims the verifier marked false or inconclusive (internal consistency, not ground truth). "
-    "A full eval run can take **several minutes per question** on CPU when runs are not reused."
+    "**Retrieval hit** = at least one evidence snippet contains an expected keyword "
+    "(not semantic similarity). "
+    "**Unsupported rate** = claims the verifier marked false or inconclusive "
+    "(internal consistency, not ground truth). "
+    "A full eval run can take several minutes per fresh question on CPU."
 )
 
 results = load_results()
 
 if results is None:
-    st.warning(
-        f"No evaluation results yet. Run the test set below — output is saved to `{RESULTS_PATH}`."
+    empty_state(
+        "Evaluation has not been run yet",
+        f"Run the test set below. Results are saved to {RESULTS_PATH}.",
     )
 else:
     agg = results.get("aggregate") or {}
-    st.header("Aggregate (last run)")
-    c1, c2, c3, c4 = st.columns(4)
-    c1.metric("Questions evaluated", agg.get("questions_evaluated", "—"))
-    if agg.get("questions_done") is not None:
-        c1.caption(f"Done: {agg.get('questions_done')} · Failed: {agg.get('questions_failed', 0)}")
+    section_label("Aggregate (last run)")
+
     uns = agg.get("avg_unsupported_rate")
-    c2.metric(
-        "Avg unsupported claim rate",
-        f"{uns:.0%}" if isinstance(uns, (int, float)) else "—",
-        help="Verifier returned false or inconclusive",
-    )
+    uns_s = f"{uns:.0%}" if isinstance(uns, (int, float)) else "—"
     t = agg.get("avg_response_time_seconds")
     if agg.get("all_runs_reused"):
-        c3.metric(
-            "Avg response time",
-            "—",
-            help="Previous run reused existing DONE runs; use fresh runs to measure wall clock",
-        )
+        time_s = "—"
+        time_help = "Last run reused DONE runs; use fresh runs for wall-clock time"
     else:
-        c3.metric(
-            "Avg response time (s)",
-            f"{t:.0f}" if isinstance(t, (int, float)) else "—",
-        )
+        time_s = f"{t:.0f}" if isinstance(t, (int, float)) else "—"
+        time_help = "Average end-to-end seconds across evaluated questions"
+
     rh = agg.get("retrieval_hit_rate")
-    c4.metric(
-        "Retrieval keyword hit rate",
-        f"{rh:.0%}" if isinstance(rh, (int, float)) else "—",
-        help="Basic keyword-in-evidence heuristic",
+    rh_s = f"{rh:.0%}" if isinstance(rh, (int, float)) else "—"
+
+    metric_row(
+        [
+            ("Questions evaluated", str(agg.get("questions_evaluated", "—")), None),
+            ("Avg unsupported rate", uns_s, "Verifier false or inconclusive"),
+            ("Avg response time (s)", time_s, time_help),
+            ("Retrieval keyword hit", rh_s, "Keyword-in-evidence heuristic"),
+        ]
     )
+    if agg.get("questions_done") is not None:
+        st.caption(
+            f"Completed: {agg.get('questions_done')} · Failed: {agg.get('questions_failed', 0)}"
+        )
     if results.get("disclaimer"):
         st.caption(results["disclaimer"])
     st.caption(f"Generated: {results.get('generated_at', 'unknown')}")
@@ -63,27 +69,48 @@ else:
     rows = []
     for row in results.get("per_question") or []:
         sup = row.get("supported_rate")
-        uns = row.get("unsupported_rate")
+        uns_r = row.get("unsupported_rate")
         rows.append(
             {
                 "Question id": row.get("id"),
                 "Retrieval hit": "yes" if row.get("retrieval_hit") else "no",
                 "Supported rate": f"{sup:.0%}" if isinstance(sup, (int, float)) else "n/a",
-                "Unsupported rate": f"{uns:.0%}" if isinstance(uns, (int, float)) else "n/a",
+                "Unsupported rate": f"{uns_r:.0%}" if isinstance(uns_r, (int, float)) else "n/a",
                 "Time (s)": row.get("response_time_seconds"),
                 "Status": row.get("run_status"),
-                "Reused run": row.get("reused_run"),
+                "Reused": row.get("reused_run"),
             }
         )
     if rows:
-        st.subheader("Per-question results")
+        st.markdown("### Per-question results")
+        # Lightweight bar chart only when numeric rates exist
+        chart_data = []
+        for row in results.get("per_question") or []:
+            uns_v = row.get("unsupported_rate")
+            if isinstance(uns_v, (int, float)):
+                chart_data.append(
+                    {
+                        "question": str(row.get("id") or "")[:24],
+                        "unsupported_rate": float(uns_v),
+                    }
+                )
+        if chart_data:
+            import pandas as pd
+
+            st.caption("Unsupported claim rate by question (verifier heuristic)")
+            st.bar_chart(
+                pd.DataFrame(chart_data).set_index("question"),
+                color="#5B8CFF",
+                height=220,
+            )
+
         st.dataframe(rows, use_container_width=True, hide_index=True)
 
     with st.expander("Full results JSON"):
         st.json(results)
 
 st.divider()
-st.header("Run evaluation set")
+section_label("Run evaluation set")
 limit = st.number_input(
     "Limit questions (0 = entire set)",
     min_value=0,
